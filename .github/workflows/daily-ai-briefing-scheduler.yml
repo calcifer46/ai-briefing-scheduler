@@ -1,0 +1,33 @@
+name: Daily AI News Briefing Scheduler
+
+on:
+  schedule:
+    - cron: '* * * * *'
+  workflow_dispatch:
+
+jobs:
+  trigger-n8n-briefing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger webhook every 30s (twice per minute)
+        run: |
+          call_webhook() {
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              -X GET \
+              "https://0210021447.jupiter.test-eu12.orbit.managedn8n.on.dwc.tools.sap/api/n8n-proxy/v1/webhook/daily-ai-briefing")
+            echo "$(date -u '+%H:%M:%S') — HTTP $HTTP_STATUS"
+            if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+              echo "❌ Webhook call failed (HTTP $HTTP_STATUS)"
+              return 1
+            fi
+            echo "✅ Webhook triggered successfully"
+          }
+
+          echo "--- Call 1 (0s) ---"
+          call_webhook
+
+          echo "Sleeping 30s..."
+          sleep 30
+
+          echo "--- Call 2 (30s) ---"
+          call_webhook
