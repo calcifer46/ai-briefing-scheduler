@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boat Launch Checklist – 2017 Tracker Grizzly 1648</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #1a6fa8;
+      --blue-lt: #e8f4fd;
+      --green:   #1e7e34;
+      --green-lt:#e8f5ea;
+      --red:     #c0392b;
+      --red-lt:  #fdecea;
+      --amber:   #d97706;
+      --amber-lt:#fff8e6;
+      --gray:    #6b7280;
+      --bg:      #f3f6fa;
+      --card:    #ffffff;
+      --border:  #d1d5db;
+      --text:    #1f2937;
+      --muted:   #6b7280;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    header {
+      background: var(--blue);
+      color: #fff;
+      border-radius: 12px;
+      padding: 20px 24px 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -.3px; }
+    header p  { font-size: .85rem; opacity: .85; margin-top: 4px; }
+
+    .progress-bar-wrap {
+      background: rgba(255,255,255,.25);
+      border-radius: 99px;
+      height: 8px;
+      margin-top: 14px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      background: #7ee8a2;
+      height: 100%;
+      border-radius: 99px;
+      width: 0%;
+      transition: width .35s ease;
+    }
+    .progress-label { font-size: .78rem; opacity: .9; margin-top: 6px; }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-size: .85rem;
+      font-weight: 600;
+      transition: filter .15s;
+    }
+    button:hover { filter: brightness(.92); }
+    .btn-reset  { background: #e5e7eb; color: var(--text); }
+    .btn-print  { background: var(--blue); color: #fff; }
+
+    section {
+      background: var(--card);
+      border-radius: 12px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon { font-size: 1.25rem; }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      flex: 1;
+    }
+    .section-count {
+      font-size: .78rem;
+      font-weight: 600;
+      background: var(--bg);
+      border-radius: 99px;
+      padding: 2px 9px;
+      color: var(--muted);
+    }
+
+    .phase-home   .section-header { background: #f0f4ff; }
+    .phase-ramp   .section-header { background: var(--amber-lt); }
+    .phase-launch .section-header { background: var(--green-lt); }
+    .phase-water  .section-header { background: #e8f4fd; }
+    .phase-load   .section-header { background: #f5f0ff; }
+    .phase-post   .section-header { background: #f0fff4; }
+
+    ul { list-style: none; }
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 11px 18px;
+      border-bottom: 1px solid #f3f4f6;
+      transition: background .1s;
+    }
+    li:last-child { border-bottom: none; }
+    li:hover { background: #fafafa; }
+    li.done { opacity: .5; }
+    li.done .item-label { text-decoration: line-through; }
+
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      cursor: pointer;
+      accent-color: var(--green);
+      margin-top: 1px;
+    }
+
+    .item-body { flex: 1; }
+    .item-label { font-size: .9rem; font-weight: 500; line-height: 1.4; }
+    .item-note  { font-size: .78rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+    /* severity badges */
+    .badge {
+      display: inline-block;
+      font-size: .68rem;
+      font-weight: 700;
+      border-radius: 4px;
+      padding: 1px 6px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .badge-critical { background: var(--red-lt);   color: var(--red);   border: 1px solid #f5c6c2; }
+    .badge-warn     { background: var(--amber-lt); color: var(--amber); border: 1px solid #fcd28a; }
+
+    /* critical item row highlight */
+    li.critical { border-left: 3px solid var(--red); }
+    li.critical .item-label { color: var(--red); }
+
+    footer {
+      text-align: center;
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: 8px;
+      padding-bottom: 24px;
+    }
+
+    @media print {
+      body { background: #fff; padding: 8px; }
+      .controls, .progress-bar-wrap, .progress-label { display: none; }
+      section { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⛵ Boat Launch Checklist</h1>
+  <p>2017 Tracker Grizzly 1648 &nbsp;·&nbsp; Mercury 25hp Tiller Outboard</p>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="progress-label" id="progressLabel">0 of 0 items complete</div>
+</header>
+
+<div class="controls">
+  <button class="btn-reset" onclick="resetAll()">&#8635; Reset All</button>
+  <button class="btn-print" onclick="window.print()">&#128438; Print / Save PDF</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 1 – AT HOME / BEFORE LEAVING
+     ═══════════════════════════════════════════════════════ -->
+<section class="phase-home">
+  <div class="section-header">
+    <span class="section-icon">🏠</span>
+    <span class="section-title">Phase 1 — At Home / Before You Leave</span>
+    <span class="section-count" id="count-home"></span>
+  </div>
+  <ul id="list-home">
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Check weather &amp; wind forecast</div>
+        <div class="item-note">Aim for winds under 15 mph for a small aluminum jon boat. Check lightning risk.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Tell someone your float plan</div>
+        <div class="item-note">Which lake, which ramp, expected return time, who to call if you're overdue.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Count &amp; inspect life jackets (PFDs)</div>
+        <div class="item-note">One properly-sized, Coast Guard-approved PFD per person on board. Wearable throwable for boats &gt;16 ft.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Check fire extinguisher</div>
+        <div class="item-note">Required on any motorized boat. Gauge should be in the green zone.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Check fuel level &amp; bring extra</div>
+        <div class="item-note">Rule of thirds: 1/3 out, 1/3 back, 1/3 reserve. A portable 6-gal tank is handy backup.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Check 2-stroke oil level / mix ratio</div>
+        <div class="item-note">Mercury 25hp (2-stroke): verify premix ratio per your manual (typically 50:1 at normal use). Low oil = engine death.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Inspect propeller</div>
+        <div class="item-note">Look for nicks, cracks, bent blades, and fishing line wrapped around the shaft.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Charge / test battery (if applicable)</div>
+        <div class="item-note">Even if you use a pull-start, check any trolling-motor or fish-finder batteries.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Pack safety kit: first aid, whistle, flashlight, anchor &amp; line</div>
+        <div class="item-note">Also bring a bailing bucket or manual bilge pump — aluminum boats can take on spray.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Check &amp; secure trailer hitch &amp; coupler</div>
+        <div class="item-note">Coupler locked, safety chains crossed under the tongue, breakaway cable (if equipped) attached.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Test trailer lights (brake, turn, running)</div>
+        <div class="item-note">Have someone stand behind while you operate the vehicle controls, or use a 4-pin tester.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Check trailer tire pressure &amp; condition</div>
+        <div class="item-note">Check both tires plus the spare. Don't forget — trailer tires lose pressure sitting.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Verify all tie-down straps are secure</div>
+        <div class="item-note">Bow strap to winch, stern transom straps. Bow safety chain if present.</div>
+      </div>
+    </li>
+    <li data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Motor tilted up &amp; transom saver in place</div>
+        <div class="item-note">Prevents road vibration from damaging the tilt mechanism while towing.</div>
+      </div>
+    </li>
+    <li class="critical" data-group="home">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Locate the drain plug <span class="badge badge-critical">Critical</span></div>
+        <div class="item-note">Know where it is BEFORE you leave. You'll need it at the ramp. Keep a spare in the truck glovebox.</div>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 2 – AT THE RAMP (BEFORE BACKING IN)
+     ═══════════════════════════════════════════════════════ -->
+<section class="phase-ramp">
+  <div class="section-header">
+    <span class="section-icon">🚗</span>
+    <span class="section-title">Phase 2 — At the Ramp (Before Backing In)</span>
+    <span class="section-count" id="count-ramp"></span>
+  </div>
+  <ul id="list-ramp">
+    <li data-group="ramp">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Pull into the staging area — not the ramp lane</div>
+        <div class="item-note">Do all prep here so you're not blocking others while working on the boat.</div>
+      </div>
+    </li>
+    <li class="critical" data-group="ramp">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Install the drain plug <span class="badge badge-critical">Critical</span></div>
+        <div class="item-note">This is the #1 beginner mistake. Reach under the transom and thread it in firmly. Check it twice.</div>
+      </div>
+    </li>
+    <li data-group="ramp">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Remove motor cover / engine cover (if any)</div>
+        <div class="item-note">Remove any canvas or tarp covering the motor before launch.</div>
+      </div>
+    </li>
+    <li data-group="ramp">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Remove transom saver &amp; tilt motor down</div>
+        <div class="item-note">Motor should be trimmed down to near-vertical for launch depth on ramp.</div>
+      </div>
+    </li>
+    <li data-group="ramp">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Disconnect trailer lights plug</div>
+        <div class="item-note">Dunking hot trailer lights causes bulb failure and corrosion. Unplug before the wheels enter the water.</div>
+      </div>
+    </li>
+    <li data-group="ramp">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Remove stern tie-down straps</div>
+        <div class="item-note">Remove both rear straps now. Leave the bow winch strap on until the boat is floating.</div>
+      </div>
+    </li>
+    <li data-group="ramp">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Attach dock lines / bow rope</div>
+        <div class="item-note">Have a long rope ready on the bow cleat so you can control the boat after it floats off.</div>
+      </div>
+    </li>
+    <li data-group="ramp">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Load all gear into the boat</div>
+        <div class="item-note">Load tackle, rods, cooler, etc. in the staging area — easier than dockside.</div>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 3 – LAUNCHING
+     ═══════════════════════════════════════════════════════ -->
+<section class="phase-launch">
+  <div class="section-header">
+    <span class="section-icon">🚤</span>
+    <span class="section-title">Phase 3 — Launching</span>
+    <span class="section-count" id="count-launch"></span>
+  </div>
+  <ul id="list-launch">
+    <li data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Back trailer slowly down the ramp</div>
+        <div class="item-note">Go slow. Stop before the tow vehicle's rear tires enter the water if possible.</div>
+      </div>
+    </li>
+    <li data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Apply parking brake &amp; chock wheels</div>
+        <div class="item-note">Engage park brake before getting out of the vehicle.</div>
+      </div>
+    </li>
+    <li data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Release bow winch strap (hold the rope!)</div>
+        <div class="item-note">Keep control of the bow line so the boat doesn't drift away.</div>
+      </div>
+    </li>
+    <li data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Float boat off trailer</div>
+        <div class="item-note">Gently push or let water float the boat free. Tie to dock cleat or have a partner hold the line.</div>
+      </div>
+    </li>
+    <li data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Pull truck &amp; empty trailer forward, park</div>
+        <div class="item-note">Clear the ramp for other boaters before doing anything else.</div>
+      </div>
+    </li>
+    <li data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Start the engine at the dock</div>
+        <div class="item-note">Squeeze fuel bulb until firm, set choke if cold, shift to neutral, start. Never run a 2-stroke dry.</div>
+      </div>
+    </li>
+    <li class="critical" data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Verify tell-tale (water-pump stream) is flowing <span class="badge badge-critical">Critical</span></div>
+        <div class="item-note">A small stream of water should squirt out of the indicator hole on the lower unit within 30 sec of starting. No stream = shut down immediately — your impeller may be failing.</div>
+      </div>
+    </li>
+    <li data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Check bilge / floor for water intrusion</div>
+        <div class="item-note">A little is normal; steady rising water means the drain plug is loose or missing.</div>
+      </div>
+    </li>
+    <li data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Attach &amp; don kill-switch lanyard</div>
+        <div class="item-note">Clip the engine kill switch lanyard to yourself any time you're underway. Tiller boats require this.</div>
+      </div>
+    </li>
+    <li data-group="launch">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">All passengers seated &amp; PFDs on / accessible</div>
+        <div class="item-note">Verify everyone is seated before leaving the no-wake zone.</div>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 4 – ON THE WATER
+     ═══════════════════════════════════════════════════════ -->
+<section class="phase-water">
+  <div class="section-header">
+    <span class="section-icon">🌊</span>
+    <span class="section-title">Phase 4 — On the Water (Periodic Checks)</span>
+    <span class="section-count" id="count-water"></span>
+  </div>
+  <ul id="list-water">
+    <li data-group="water">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Observe no-wake zone &amp; speed limits</div>
+        <div class="item-note">Most ramp areas enforce idle speed within 100–200 ft of shore or marked buoys.</div>
+      </div>
+    </li>
+    <li data-group="water">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Re-check tell-tale stream after 5 minutes</div>
+        <div class="item-note">Confirm cooling water is still flowing once up on plane.</div>
+      </div>
+    </li>
+    <li data-group="water">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Scan bilge every 30–60 minutes</div>
+        <div class="item-note">Aluminum boats can flex; rivet leaks are possible. More water than normal = investigate.</div>
+      </div>
+    </li>
+    <li data-group="water">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Monitor fuel — watch the gauge or tank</div>
+        <div class="item-note">Rule of thirds. Start heading back when you've used ~1/3 of your fuel.</div>
+      </div>
+    </li>
+    <li data-group="water">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Watch weather — head in if storm threatens</div>
+        <div class="item-note">Lightning on open water is extremely dangerous. Give storms a wide berth — head to shore early.</div>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 5 – LOADING / RETRIEVING
+     ═══════════════════════════════════════════════════════ -->
+<section class="phase-load">
+  <div class="section-header">
+    <span class="section-icon">🔄</span>
+    <span class="section-title">Phase 5 — Loading / Retrieving at the Ramp</span>
+    <span class="section-count" id="count-load"></span>
+  </div>
+  <ul id="list-load">
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Idle into the dock / loading area slowly</div>
+        <div class="item-note">Come in at low speed, into the wind or current if possible.</div>
+      </div>
+    </li>
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Pull truck &amp; trailer to staging area first</div>
+        <div class="item-note">Do NOT back down the ramp until you're ready to load — clear the ramp fast.</div>
+      </div>
+    </li>
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Back trailer into water — just deep enough to float boat on</div>
+        <div class="item-note">The bow roller should be at or just below water level.</div>
+      </div>
+    </li>
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Drive boat onto trailer, cut engine</div>
+        <div class="item-note">Approach straight and slow. Kill the engine just before the bow touches the winch post.</div>
+      </div>
+    </li>
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Attach bow winch strap &amp; crank bow snug</div>
+        <div class="item-note">Hook winch strap to bow eye. Crank until bow is seated firmly on the bow roller.</div>
+      </div>
+    </li>
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Pull truck &amp; trailer out of water</div>
+        <div class="item-note">Pull forward slowly and straight. Stop in the staging area — not on the ramp.</div>
+      </div>
+    </li>
+    <li class="critical" data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Remove drain plug to drain bilge water <span class="badge badge-critical">Critical</span></div>
+        <div class="item-note">Remove it now while water can drain freely. Storing with the plug in traps water — corrosion and added weight. Many states require the plug to be out before leaving the ramp (invasive species rules).</div>
+      </div>
+    </li>
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Tilt motor up &amp; lock; re-install transom saver</div>
+        <div class="item-note">Protect the motor and tilt system during transport.</div>
+      </div>
+    </li>
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Attach all stern tie-down straps</div>
+        <div class="item-note">Secure at least two stern straps in addition to the bow winch strap.</div>
+      </div>
+    </li>
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Re-connect trailer lights plug</div>
+        <div class="item-note">Plug back in and verify lights before heading onto the road.</div>
+      </div>
+    </li>
+    <li data-group="load">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Do a walk-around before leaving the ramp</div>
+        <div class="item-note">Motor up, all straps on, hitch locked, chains crossed, safety cable attached.</div>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 6 – POST-TRIP / AT HOME
+     ═══════════════════════════════════════════════════════ -->
+<section class="phase-post">
+  <div class="section-header">
+    <span class="section-icon">✅</span>
+    <span class="section-title">Phase 6 — Post-Trip / At Home</span>
+    <span class="section-count" id="count-post"></span>
+  </div>
+  <ul id="list-post">
+    <li data-group="post">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Flush motor with fresh water (if on saltwater or if recommended)</div>
+        <div class="item-note">Even on fresh water, a quick flush removes algae and debris. Use a flushing muff on the lower unit intakes; run for 5–10 min.</div>
+      </div>
+    </li>
+    <li data-group="post">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Rinse the boat hull &amp; trailer</div>
+        <div class="item-note">Required in many states to prevent invasive species transport. Rinse all live wells too.</div>
+      </div>
+    </li>
+    <li data-group="post">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Spray motor with corrosion inhibitor (CorrosionX / Boeshield)</div>
+        <div class="item-note">A light spray on exposed metal extends engine life, especially the lower unit and linkages.</div>
+      </div>
+    </li>
+    <li data-group="post">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Tilt motor back down after flush &amp; let water drain</div>
+        <div class="item-note">Tilting down drains any remaining water from the powerhead and cooling passages. Then tilt back up for storage.</div>
+      </div>
+    </li>
+    <li data-group="post">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Top off fuel or add fuel stabilizer if storing</div>
+        <div class="item-note">For storage &gt;30 days: use stabilizer and run the engine to distribute it. Full tanks reduce condensation.</div>
+      </div>
+    </li>
+    <li data-group="post">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Rinse &amp; dry life jackets; repack safety gear</div>
+        <div class="item-note">PFDs degrade if stored wet. Air-dry before stowing. Replenish any first-aid supplies used.</div>
+      </div>
+    </li>
+    <li class="critical" data-group="post">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Store drain plug in a known location <span class="badge badge-warn">Important</span></div>
+        <div class="item-note">Put it in the same spot every time — glove box, cup holder, or a hook on the boat. A lost plug will ruin your day.</div>
+      </div>
+    </li>
+    <li data-group="post">
+      <input type="checkbox" />
+      <div class="item-body">
+        <div class="item-label">Note anything to fix / replace before next trip</div>
+        <div class="item-note">Write it down now while it's fresh — low oil, a loose fitting, a dying light bulb, etc.</div>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<footer>
+  <p>2017 Tracker Grizzly 1648 &nbsp;·&nbsp; Mercury 25hp Tiller &nbsp;·&nbsp; Have a safe trip!</p>
+</footer>
+
+<script>
+  const GROUPS = ['home','ramp','launch','water','load','post'];
+
+  function getAll() {
+    return document.querySelectorAll('input[type="checkbox"]');
+  }
+
+  function updateCounts() {
+    let total = 0, done = 0;
+    GROUPS.forEach(g => {
+      const items = document.querySelectorAll(`[data-group="${g}"] input[type="checkbox"]`);
+      const checked = document.querySelectorAll(`[data-group="${g}"] input[type="checkbox"]:checked`);
+      const el = document.getElementById(`count-${g}`);
+      if (el) el.textContent = `${checked.length} / ${items.length}`;
+      total += items.length;
+      done  += checked.length;
+    });
+    const pct = total ? Math.round(done / total * 100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `${done} of ${total} items complete`;
+  }
+
+  function resetAll() {
+    if (!confirm('Reset all checkboxes?')) return;
+    getAll().forEach(cb => {
+      cb.checked = false;
+      cb.closest('li').classList.remove('done');
+    });
+    updateCounts();
+  }
+
+  document.addEventListener('change', e => {
+    if (e.target.type === 'checkbox') {
+      e.target.closest('li').classList.toggle('done', e.target.checked);
+      updateCounts();
+    }
+  });
+
+  // Persist state in localStorage
+  function saveState() {
+    const state = [];
+    getAll().forEach((cb, i) => state.push(cb.checked ? 1 : 0));
+    localStorage.setItem('boatChecklist', JSON.stringify(state));
+  }
+
+  function loadState() {
+    try {
+      const state = JSON.parse(localStorage.getItem('boatChecklist') || '[]');
+      getAll().forEach((cb, i) => {
+        if (state[i]) {
+          cb.checked = true;
+          cb.closest('li').classList.add('done');
+        }
+      });
+    } catch(e) {}
+    updateCounts();
+  }
+
+  document.addEventListener('change', saveState);
+  loadState();
+</script>
+</body>
+</html>
