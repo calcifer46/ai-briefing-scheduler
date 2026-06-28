@@ -134,7 +134,11 @@ section {
   gap:10px;
   padding:13px 16px;
   border-bottom:1px solid var(--border);
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
 }
+.sh:active { filter:brightness(.95); }
 .si { font-size:1.2rem; }
 .st { font-size:.95rem; font-weight:800; flex:1; color:var(--text); }
 .sc {
@@ -145,6 +149,18 @@ section {
   padding:2px 9px;
   color:var(--muted);
 }
+.chevron {
+  font-size:.85rem;
+  color:var(--muted);
+  transition:transform .25s ease;
+  flex-shrink:0;
+  margin-left:4px;
+}
+
+/* collapsed state */
+section.collapsed .chevron { transform:rotate(-90deg); }
+section.collapsed ul { display:none; }
+section.collapsed .sh { border-bottom:none; }
 
 .h1 .sh { background:#dce8d0; border-bottom-color:#c0d4b0; }
 .h2 .sh { background:#ede5cc; border-bottom-color:#d8c89a; }
@@ -418,8 +434,9 @@ const DEFAULTS = [
 // ══════════════════════════════════════════════
 //  STATE & STORAGE
 // ══════════════════════════════════════════════
-const LS_CHECK  = 'grizzly_checks';
-const LS_CUSTOM = 'grizzly_custom';
+const LS_CHECK    = 'grizzly_checks';
+const LS_CUSTOM   = 'grizzly_custom';
+const LS_COLLAPSE = 'grizzly_collapsed';
 
 function loadChecks() {
   try { return JSON.parse(localStorage.getItem(LS_CHECK) || '{}'); } catch(e) { return {}; }
@@ -431,15 +448,21 @@ function loadCustom() {
 }
 function saveCustom(s) { localStorage.setItem(LS_CUSTOM, JSON.stringify(s)); }
 
+function loadCollapsed() {
+  try { return JSON.parse(localStorage.getItem(LS_COLLAPSE) || '{}'); } catch(e) { return {}; }
+}
+function saveCollapsed(c) { localStorage.setItem(LS_COLLAPSE, JSON.stringify(c)); }
+
 function getSections() {
   const custom = loadCustom();
   if (custom) return custom;
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
 
-let sections = getSections();
-let checks   = loadChecks();
-let editMode = false;
+let sections  = getSections();
+let checks    = loadChecks();
+let collapsed = loadCollapsed();
+let editMode  = false;
 
 // ══════════════════════════════════════════════
 //  RENDER
@@ -457,12 +480,23 @@ function render() {
     const total   = sec.items.length;
     const checked = sec.items.filter(it => checks[it.id]).length;
 
+    if (collapsed[sec.id]) sEl.classList.add('collapsed');
+
     sEl.innerHTML = `
       <div class="sh">
         <span class="si">${sec.icon}</span>
         <span class="st" id="title-${sec.id}">${escH(sec.title)}</span>
         <span class="sc" id="cnt-${sec.id}">${checked} / ${total}</span>
+        <span class="chevron">&#9660;</span>
       </div>`;
+
+    sEl.querySelector('.sh').addEventListener('click', e => {
+      // don't collapse when tapping edit controls inside the header
+      if (e.target.closest('button')) return;
+      sEl.classList.toggle('collapsed');
+      collapsed[sec.id] = sEl.classList.contains('collapsed');
+      saveCollapsed(collapsed);
+    });
 
     const ul = document.createElement('ul');
 
