@@ -119,7 +119,7 @@ button:hover { filter:brightness(.92); }
 .btn-edit.active { background:#c94a0a; }
 
 /* ── SECTIONS ── */
-section {
+details {
   background:var(--card);
   border-radius:12px;
   margin-bottom:16px;
@@ -127,6 +127,10 @@ section {
   overflow:hidden;
   border:1px solid var(--border);
 }
+
+/* remove native browser disclosure arrow */
+details summary { list-style:none; }
+details summary::-webkit-details-marker { display:none; }
 
 .sh {
   display:flex;
@@ -137,8 +141,10 @@ section {
   cursor:pointer;
   user-select:none;
   -webkit-user-select:none;
+  touch-action:manipulation;
 }
-.sh:active { filter:brightness(.95); }
+details:not([open]) .sh { border-bottom:none; }
+.sh:active { filter:brightness(.93); }
 .si { font-size:1.2rem; }
 .st { font-size:.95rem; font-weight:800; flex:1; color:var(--text); }
 .sc {
@@ -154,13 +160,9 @@ section {
   color:var(--muted);
   transition:transform .25s ease;
   flex-shrink:0;
-  margin-left:4px;
+  margin-left:2px;
 }
-
-/* collapsed state */
-section.collapsed .chevron { transform:rotate(-90deg); }
-section.collapsed ul { display:none; }
-section.collapsed .sh { border-bottom:none; }
+details:not([open]) .chevron { transform:rotate(-90deg); }
 
 .h1 .sh { background:#dce8d0; border-bottom-color:#c0d4b0; }
 .h2 .sh { background:#ede5cc; border-bottom-color:#d8c89a; }
@@ -304,7 +306,8 @@ footer strong { color:var(--grn); }
 @media print {
   body { background:#fff; padding:8px; }
   .controls,.pb-wrap,.pl { display:none; }
-  section { box-shadow:none; border:1px solid #ccc; page-break-inside:avoid; }
+  details { box-shadow:none; border:1px solid #ccc; page-break-inside:avoid; }
+  details:not([open]) { display:none; }
   .del-btn,.crit-toggle,.add-row { display:none !important; }
   li.done { opacity:1; }
   li.done .il { text-decoration:none; }
@@ -472,29 +475,27 @@ function render() {
   container.innerHTML = '';
 
   sections.forEach(sec => {
-    const sEl = document.createElement('section');
+    const sEl = document.createElement('details');
     sEl.className = sec.cls;
     sEl.dataset.sid = sec.id;
+    if (!collapsed[sec.id]) sEl.setAttribute('open', '');
 
     // count
     const total   = sec.items.length;
     const checked = sec.items.filter(it => checks[it.id]).length;
 
-    if (collapsed[sec.id]) sEl.classList.add('collapsed');
+    const summary = document.createElement('summary');
+    summary.className = 'sh';
+    summary.innerHTML = `
+      <span class="si">${sec.icon}</span>
+      <span class="st" id="title-${sec.id}">${escH(sec.title)}</span>
+      <span class="sc" id="cnt-${sec.id}">${checked} / ${total}</span>
+      <span class="chevron">&#9660;</span>`;
+    sEl.appendChild(summary);
 
-    sEl.innerHTML = `
-      <div class="sh">
-        <span class="si">${sec.icon}</span>
-        <span class="st" id="title-${sec.id}">${escH(sec.title)}</span>
-        <span class="sc" id="cnt-${sec.id}">${checked} / ${total}</span>
-        <span class="chevron">&#9660;</span>
-      </div>`;
-
-    sEl.querySelector('.sh').addEventListener('click', e => {
-      // don't collapse when tapping edit controls inside the header
-      if (e.target.closest('button')) return;
-      sEl.classList.toggle('collapsed');
-      collapsed[sec.id] = sEl.classList.contains('collapsed');
+    // save open/closed state using native toggle event
+    sEl.addEventListener('toggle', () => {
+      collapsed[sec.id] = !sEl.open;
       saveCollapsed(collapsed);
     });
 
